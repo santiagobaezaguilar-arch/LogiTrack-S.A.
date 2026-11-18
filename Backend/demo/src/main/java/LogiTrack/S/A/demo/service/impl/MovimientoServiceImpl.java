@@ -11,6 +11,7 @@ import LogiTrack.S.A.demo.model.*;
 import LogiTrack.S.A.demo.repository.BodegaRepository;
 import LogiTrack.S.A.demo.repository.MovimientoRepository;
 import LogiTrack.S.A.demo.repository.UsuarioRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import LogiTrack.S.A.demo.service.MovimientoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -147,7 +148,7 @@ public class MovimientoServiceImpl implements MovimientoService {
     private Bodega resolverBodegaOrigen(MovimientoDtoRequest dto) {
         if (dto.tipoMovimiento() == TipoMovimiento.ENTRADA) return null;
         if (dto.bodegaOrigenId() == null)
-            throw new RuntimeException("La bodega origen es obligatoria para movimientos de tipo " + dto.tipoMovimiento());
+            throw new BusinessRuleException("La bodega origen es obligatoria para movimientos de tipo " + dto.tipoMovimiento());
         return bodegaRepository.findById(dto.bodegaOrigenId())
                 .orElseThrow(() -> new RuntimeException("Bodega origen no encontrada con ID: " + dto.bodegaOrigenId()));
     }
@@ -155,7 +156,7 @@ public class MovimientoServiceImpl implements MovimientoService {
     private Bodega resolverBodegaDestino(MovimientoDtoRequest dto) {
         if (dto.tipoMovimiento() == TipoMovimiento.SALIDA) return null;
         if (dto.bodegaDestinoId() == null)
-            throw new RuntimeException("La bodega destino es obligatoria para movimientos de tipo " + dto.tipoMovimiento());
+            throw new BusinessRuleException("La bodega destino es obligatoria para movimientos de tipo " + dto.tipoMovimiento());
         return bodegaRepository.findById(dto.bodegaDestinoId())
                 .orElseThrow(() -> new RuntimeException("Bodega destino no encontrada con ID: " + dto.bodegaDestinoId()));
     }

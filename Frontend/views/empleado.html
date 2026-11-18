@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiTrack — Panel Empleado</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────── -->
+<header class="site-header">
+    <a class="brand" href="#">
+        <div class="brand-mark">📦</div>
+        Logi<span class="brand-accent">Track</span>
+    </a>
+    <div class="header-right">
+        <span class="header-user">Hola, <strong id="hdr-nombre">—</strong></span>
+        <span class="role-badge role-empleado">Empleado</span>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+</header>
+
+<!-- ── SHELL ───────────────────────────────────────────────── -->
+<main class="page-shell">
+
+    <div class="eyebrow">Portal de empleado</div>
+    <h1 class="page-title">Gestión de <span>inventario</span></h1>
+    <p class="page-subtitle">Consulta bodegas, productos, registra movimientos y revisa el stock disponible.</p>
+
+    <!-- Tabs -->
+    <div class="tabs" id="main-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="consultas">🔎 Consultas</button>
+        <button class="tab-btn" data-tab="movimientos">🔄 Movimientos</button>
+        <button class="tab-btn" data-tab="inventario">📊 Mi inventario</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: CONSULTAS
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-consultas">
+
+        <div class="cards-grid cards-grid-wide">
+
+            <!-- Ver bodegas -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">🏭</div>
+                    <div><div class="card-title">Bodegas disponibles</div><div class="card-desc">Consulta todas las bodegas activas del sistema.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <p class="feedback" id="fb-bodegas"></p>
+                <button class="btn btn-outline btn-full" onclick="cargarBodegas()">Ver bodegas</button>
+            </div>
+
+            <!-- Ver productos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">📦</div>
+                    <div><div class="card-title">Catálogo de productos</div><div class="card-desc">Consulta por ID, categoría o lista completa.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>ID</label><input type="number" id="fp-id" placeholder="1" min="1"></div>
+                    <div class="field"><label>Categoría</label><input type="text" id="fp-cat" placeholder="Materiales"></div>
+                </div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="buscarProductoId()">Por ID</button>
+                    <button class="btn btn-outline btn-full" onclick="buscarProductoCat()">Por categoría</button>
+                    <button class="btn btn-outline btn-full" onclick="listarProductos()">Ver todos</button>
+                </div>
+                <p class="feedback" id="fb-productos"></p>
+            </div>
+
+        </div>
+
+        <!-- Tabla bodegas -->
+        <div class="section-label">Bodegas</div>
+        <div class="table-wrap">
+            <table id="tbl-bodegas">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Ubicación</th><th>Capacidad</th><th>Encargado</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="5">Pulsa "Ver bodegas".</td></tr></tbody>
+            </table>
+        </div>
+
+        <!-- Tabla productos -->
+        <div class="section-label">Productos</div>
+        <div class="table-wrap">
+            <table id="tbl-productos">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="4">Pulsa "Ver todos".</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: MOVIMIENTOS
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-movimientos">
+
+        <div class="cards-grid cards-grid-wide">
+
+            <!-- Registrar movimiento -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">🔄</div>
+                    <div>
+                        <div class="card-title">Registrar movimiento</div>
+                        <div class="card-desc">
+                            Para TRANSFERENCIA: se descuenta de la bodega origen y se suma a la destino.<br>
+                            El responsable se registra automáticamente con tu sesión.
+                        </div>
+                    </div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field">
+                    <label>Tipo de movimiento</label>
+                    <select id="emp-mov-tipo" onchange="toggleBodegasEmp()">
+                        <option value="ENTRADA">ENTRADA — ingreso a bodega destino</option>
+                        <option value="SALIDA">SALIDA — egreso de bodega origen</option>
+                        <option value="TRANSFERENCIA">TRANSFERENCIA — entre bodegas</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <div class="field" id="emp-wrap-origen">
+                        <label>ID bodega origen</label>
+                        <input type="number" id="emp-mov-origen" placeholder="1" min="1">
+                    </div>
+                    <div class="field" id="emp-wrap-destino">
+                        <label>ID bodega destino</label>
+                        <input type="number" id="emp-mov-destino" placeholder="2" min="1">
+                    </div>
+                </div>
+                <p class="feedback" id="fb-mov-create"></p>
+                <button class="btn btn-amber btn-full" onclick="registrarMovimiento()">Registrar movimiento</button>
+            </div>
+
+            <!-- Agregar producto al movimiento -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-green">📝</div>
+                    <div>
+                        <div class="card-title">Agregar producto al movimiento</div>
+                        <div class="card-desc">
+                            Vincula un producto y su cantidad a un movimiento ya creado.<br>
+                            El stock se ajusta automáticamente según el tipo de movimiento.
+                        </div>
+                    </div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field-grid-2">
+                    <div class="field"><label>ID movimiento</label><input type="number" id="emp-det-mid" placeholder="1" min="1"></div>
+                    <div class="field"><label>ID producto</label><input type="number" id="emp-det-pid" placeholder="3" min="1"></div>
+                </div>
+                <div class="field"><label>Cantidad de unidades</label><input type="number" id="emp-det-cant" placeholder="50" min="1"></div>
+                <p class="feedback" id="fb-det"></p>
+                <button class="btn btn-green btn-full" onclick="agregarDetalle()">Agregar detalle</button>
+            </div>
+
+            <!-- Ver mis movimientos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">🔎</div>
+                    <div><div class="card-title">Consultar movimientos</div><div class="card-desc">Filtra por tipo o fecha.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <div class="field">
+                    <label>Tipo</label>
+                    <select id="emp-filtro-tipo">
+                        <option value="">— todos —</option>
+                        <option>ENTRADA</option>
+                        <option>SALIDA</option>
+                        <option>TRANSFERENCIA</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>Desde</label><input type="datetime-local" id="emp-desde"></div>
+                    <div class="field"><label>Hasta</label><input type="datetime-local" id="emp-hasta"></div>
+                </div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="listarMovimientos()">Ver todos</button>
+                    <button class="btn btn-outline btn-full" onclick="filtrarMovimientos()">Filtrar</button>
+                </div>
+                <p class="feedback" id="fb-mov-get"></p>
+            </div>
+
+        </div>
+
+        <div class="section-label">Movimientos</div>
+        <div class="table-wrap">
+            <table id="tbl-movimientos">
+                <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Responsable</th><th>Origen</th><th>Destino</th><th>Productos</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="7">Pulsa "Ver todos".</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: INVENTARIO
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-inventario">
+
+        <div class="cards-grid">
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">📊</div>
+                    <div><div class="card-title">Consultar inventario</div><div class="card-desc">Ve el stock de cualquier bodega o busca alertas de stock bajo.</div></div>
+                </div>
+                <div class="field"><label>ID de bodega (opcional — vacío = global)</label><input type="number" id="emp-inv-bid" placeholder="dejar vacío para ver todo"></div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="verInventarioGlobal()">Ver global</button>
+                    <button class="btn btn-outline btn-full" onclick="verInventarioBodega()">Por bodega</button>
+                    <button class="btn btn-red btn-full"     onclick="verStockBajo()">⚠ Stock bajo</button>
+                </div>
+                <p class="feedback" id="fb-inv"></p>
+            </div>
+
+        </div>
+
+        <div class="section-label">Inventario</div>
+        <div class="table-wrap">
+            <table id="tbl-inventario">
+                <thead><tr><th>Bodega</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="5">Selecciona una consulta arriba.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="../js/api.js"></script>
+<script src="../js/empleado.js"></script>
+</body>
+</html>

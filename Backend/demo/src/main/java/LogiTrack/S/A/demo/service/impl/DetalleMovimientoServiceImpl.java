@@ -16,6 +16,7 @@ import LogiTrack.S.A.demo.model.TipoOperacion;
 import LogiTrack.S.A.demo.repository.DetalleMovimientoRepository;
 import LogiTrack.S.A.demo.repository.MovimientoRepository;
 import LogiTrack.S.A.demo.repository.ProductoRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import LogiTrack.S.A.demo.service.DetalleMovimientoService;
 import io.swagger.v3.oas.annotations.Operation;

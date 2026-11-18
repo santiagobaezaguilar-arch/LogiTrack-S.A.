@@ -5,6 +5,7 @@ import LogiTrack.S.A.demo.mapper.AuditoriaMapper;
 import LogiTrack.S.A.demo.model.Auditoria;
 import LogiTrack.S.A.demo.model.TipoOperacion;
 import LogiTrack.S.A.demo.repository.AuditoriaRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

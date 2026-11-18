@@ -8,6 +8,7 @@ import LogiTrack.S.A.demo.model.Usuario;
 import LogiTrack.S.A.demo.repository.BodegaRepository;
 import LogiTrack.S.A.demo.repository.CredencialRepository;
 import LogiTrack.S.A.demo.repository.UsuarioRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import LogiTrack.S.A.demo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +47,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             UsuarioDtoRequest dto
     ) {
         if (usuarioRepository.existsByCorreo(dto.correo())) {
-            throw new RuntimeException("El correo ya está registrado en el sistema");
+            throw new BusinessRuleException("El correo ya está registrado en el sistema");
         }
         Usuario usuario = usuarioMapper.dtoToEntity(dto);
         usuarioRepository.save(usuario);
@@ -94,10 +95,10 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
 
         if (bodegaRepository.existsByEncargadoId(id)) {
-            throw new RuntimeException("El usuario es encargado de una o más bodegas y no puede eliminarse");
+            throw new BusinessRuleException("El usuario es encargado de una o más bodegas y no puede eliminarse");
         }
         if (credencialRepository.existsByUsuarioId(id)) {
-            throw new RuntimeException("El usuario tiene credenciales activas. Elimine primero las credenciales");
+            throw new BusinessRuleException("El usuario tiene credenciales activas. Elimine primero las credenciales");
         }
 
         auditoriaService.registrar(TipoOperacion.DELETE, "Usuario", id,

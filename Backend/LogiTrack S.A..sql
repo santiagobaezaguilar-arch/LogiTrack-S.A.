@@ -80,3 +80,54 @@ CREATE TABLE auditoria (
     detalles TEXT,                          -- Partes implicadas, valores anteriores/nuevos o descripción del evento
     fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- ==========================================
+-- INSERCIÓN DE DATOS DE PRUEBA
+-- ==========================================
+
+-- 1. Insertar 5 Empleados/Usuarios
+INSERT INTO usuarios (nombre, telefono, correo) VALUES 
+('Carlos Administrador', '3001234567', 'admin@logitrack.com'),
+('Ana Gómez', '3109876543', 'ana.gomez@logitrack.com'),
+('Luis Pérez', '3204567891', 'luis.perez@logitrack.com'),
+('Sofía Torres', '3157891234', 'sofia.torres@logitrack.com'),
+('Miguel Ángel Ruiz', '3186543210', 'miguel.ruiz@logitrack.com');
+
+-- 2. Credenciales (Todos con contraseña '1234' en texto plano o simulando BCrypt por simplicidad de pruebas. 
+-- Nota: Si usas Spring Security con BCrypt real, recuerda encriptarla en tu backend, aquí se deja el texto de ejemplo o un hash compatible si prefieres).
+-- El usuario 1 ('admin@logitrack.com') es rol ADMIN. Los demás son EMPLEADO.
+INSERT INTO credenciales (usuario_id, password, rol) VALUES 
+(1, '1234', 'ADMIN'),
+(2, '1234', 'EMPLEADO'),
+(3, '1234', 'EMPLEADO'),
+(4, '1234', 'EMPLEADO'),
+(5, '1234', 'EMPLEADO');
+
+-- 3. Insertar 3 Bodegas (asignando encargados de la tabla usuarios)
+INSERT INTO bodega (nombre, ubicacion, capacidad, encargado_id) VALUES 
+('Bodega Central Norte', 'Zona Industrial Calle 80, Bogotá', 5000, 2),
+('Bodega Metropolitana Sur', 'Autopista Sur #45-20, Medellín', 3000, 3),
+('Bodega Costa Caribe', 'Vía 40 No. 70-12, Barranquilla', 4000, 4);
+
+-- 4. Insertar 7 Productos repartidos en 3 Categorías (Tecnología, Hogar, Oficina)
+INSERT INTO producto (nombre, categoria, precio) VALUES 
+('Laptop Gamer 15.6"', 'Tecnología', 3500.00),
+('Mouse Inalámbrico Ergonómico', 'Tecnología', 85.50),
+('Teclado Mecánico RGB', 'Tecnología', 220.00),
+('Silla Escritoria Ejecutiva', 'Oficina', 450.00),
+('Escritorio en L de Madera', 'Oficina', 780.00),
+('Lámpara LED de Escritorio', 'Hogar', 65.00),
+('Estantería Metálica Modular', 'Hogar', 310.00);
+
+-- 5. Insertar inventario inicial en las bodegas (Stock de prueba)
+INSERT INTO inventario (bodega_id, producto_id, stock) VALUES 
+(1, 1, 45), -- Bodega 1 tiene Laptops
+(1, 2, 120),-- Bodega 1 tiene Mouses
+(1, 3, 80), -- Bodega 1 tiene Teclados
+(2, 4, 30), -- Bodega 2 tiene Sillas
+(2, 5, 15), -- Bodega 2 tiene Escritorios
+(3, 6, 200),-- Bodega 3 tiene Lámparas
+(3, 7, 50); -- Bodega 3 tiene Estanterías
+
+-- Nota: Las tablas `movimiento`, `detalle_movimiento` y `auditoria` se mantienen completamente limpias (sin registros), tal como lo solicitaste.

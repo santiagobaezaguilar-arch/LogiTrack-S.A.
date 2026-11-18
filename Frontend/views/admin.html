@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiTrack — Panel Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────── -->
+<header class="site-header">
+    <a class="brand" href="#">
+        <div class="brand-mark">📦</div>
+        Logi<span class="brand-accent">Track</span>
+    </a>
+    <div class="header-right">
+        <span class="header-user">Sesión: <strong id="hdr-nombre">—</strong></span>
+        <span class="role-badge role-admin">Admin</span>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+</header>
+
+<!-- ── SHELL ───────────────────────────────────────────────── -->
+<main class="page-shell">
+
+    <div class="eyebrow">Panel de administración</div>
+    <h1 class="page-title">Control total del <span>sistema</span></h1>
+    <p class="page-subtitle">Gestiona usuarios, bodegas, productos, inventario, movimientos y auditorías.</p>
+
+    <!-- Stats rápidas -->
+    <div class="stats-strip" id="stats-strip">
+        <div class="stat-card"><div class="stat-label">Usuarios</div><div class="stat-value" id="st-usuarios">—</div><div class="stat-sub">registrados</div></div>
+        <div class="stat-card"><div class="stat-label">Bodegas</div><div class="stat-value" id="st-bodegas">—</div><div class="stat-sub">activas</div></div>
+        <div class="stat-card"><div class="stat-label">Productos</div><div class="stat-value" id="st-productos">—</div><div class="stat-sub">en catálogo</div></div>
+        <div class="stat-card"><div class="stat-label">Stock bajo</div><div class="stat-value" id="st-stockbajo" style="color:var(--red)">—</div><div class="stat-sub">alertas activas</div></div>
+    </div>
+
+    <!-- Tabs sección -->
+    <div class="tabs" id="main-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="usuarios">👥 Usuarios</button>
+        <button class="tab-btn" data-tab="bodegas">🏭 Bodegas</button>
+        <button class="tab-btn" data-tab="productos">📦 Productos</button>
+        <button class="tab-btn" data-tab="inventario">📊 Inventario</button>
+        <button class="tab-btn" data-tab="movimientos">🔄 Movimientos</button>
+        <button class="tab-btn" data-tab="auditoria">🔍 Auditoría</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: USUARIOS
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-usuarios">
+
+        <div class="cards-grid cards-grid-wide">
+
+            <!-- Crear usuario -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-green">👤</div>
+                    <div>
+                        <div class="card-title">Crear usuario</div>
+                        <div class="card-desc">Registra un nuevo empleado o admin en el sistema.</div>
+                    </div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field"><label>Nombre completo</label><input type="text" id="cu-nombre" placeholder="Carlos Martínez"></div>
+                <div class="field-row">
+                    <div class="field"><label>Correo</label><input type="email" id="cu-correo" placeholder="carlos@logitrack.com"></div>
+                    <div class="field"><label>Teléfono</label><input type="tel" id="cu-tel" placeholder="3101234567"></div>
+                </div>
+                <p class="feedback" id="fb-cu"></p>
+                <button class="btn btn-green btn-full" onclick="crearUsuario()">Crear usuario</button>
+            </div>
+
+            <!-- Listar usuarios -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">📋</div>
+                    <div>
+                        <div class="card-title">Listar usuarios</div>
+                        <div class="card-desc">Consulta todos los usuarios registrados.</div>
+                    </div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <p class="feedback" id="fb-lu"></p>
+                <button class="btn btn-outline btn-full" onclick="listarUsuarios()">Ver todos</button>
+            </div>
+
+        </div>
+
+            <!-- Actualizar usuario -->
+            <div class="card" id="card-actualizar-usuario" style="display:none">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">✏️</div>
+                    <div><div class="card-title">Actualizar usuario <span id="uu-id-label" style="color:var(--gold)"></span></div><div class="card-desc">Modifica los datos del usuario seleccionado.</div></div>
+                    <span class="method m-put" style="margin-left:auto">PUT</span>
+                </div>
+                <input type="hidden" id="uu-id">
+                <div class="field"><label>Nombre completo</label><input type="text" id="uu-nombre" placeholder="Carlos Martínez"></div>
+                <div class="field-row">
+                    <div class="field"><label>Correo</label><input type="email" id="uu-correo" placeholder="carlos@logitrack.com"></div>
+                    <div class="field"><label>Teléfono</label><input type="tel" id="uu-tel" placeholder="3101234567"></div>
+                </div>
+                <p class="feedback" id="fb-uu"></p>
+                <div class="field-row">
+                    <button class="btn btn-amber btn-full" onclick="actualizarUsuario()">Guardar cambios</button>
+                    <button class="btn btn-outline" onclick="cancelarEdicionUsuario()" style="min-width:120px">Cancelar</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Tabla usuarios -->
+        <div class="section-label">Usuarios registrados</div>
+        <div class="table-wrap">
+            <table id="tbl-usuarios">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="5">Pulsa "Ver todos" para cargar.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: BODEGAS
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-bodegas">
+
+        <div class="cards-grid cards-grid-wide">
+
+            <!-- Crear bodega -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">🏭</div>
+                    <div><div class="card-title">Crear bodega</div><div class="card-desc">Registra una nueva bodega en el sistema.</div></div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field"><label>Nombre</label><input type="text" id="cb-nombre" placeholder="Bodega Norte"></div>
+                <div class="field"><label>Ubicación</label><input type="text" id="cb-ubicacion" placeholder="Calle 15 #34-20, Bogotá"></div>
+                <div class="field-row">
+                    <div class="field"><label>Capacidad (unidades)</label><input type="number" id="cb-capacidad" placeholder="5000" min="0"></div>
+                    <div class="field"><label>ID encargado (opcional)</label><input type="number" id="cb-encargado" placeholder="1" min="1"></div>
+                </div>
+                <p class="feedback" id="fb-cb"></p>
+                <button class="btn btn-amber btn-full" onclick="crearBodega()">Crear bodega</button>
+            </div>
+
+            <!-- Listar bodegas -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">📋</div>
+                    <div><div class="card-title">Listar bodegas</div><div class="card-desc">Consulta todas las bodegas activas.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <p class="feedback" id="fb-lb"></p>
+                <button class="btn btn-outline btn-full" onclick="listarBodegas()">Ver todas</button>
+            </div>
+
+        </div>
+
+            <!-- Actualizar bodega -->
+            <div class="card" id="card-actualizar-bodega" style="display:none">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">✏️</div>
+                    <div><div class="card-title">Actualizar bodega <span id="ub-id-label" style="color:var(--gold)"></span></div><div class="card-desc">Modifica los datos de la bodega seleccionada.</div></div>
+                    <span class="method m-put" style="margin-left:auto">PUT</span>
+                </div>
+                <input type="hidden" id="ub-id">
+                <div class="field"><label>Nombre</label><input type="text" id="ub-nombre" placeholder="Bodega Norte"></div>
+                <div class="field"><label>Ubicación</label><input type="text" id="ub-ubicacion" placeholder="Calle 15 #34-20, Bogotá"></div>
+                <div class="field-row">
+                    <div class="field"><label>Capacidad</label><input type="number" id="ub-capacidad" placeholder="5000" min="0"></div>
+                    <div class="field"><label>ID encargado</label><input type="number" id="ub-encargado" placeholder="1" min="1"></div>
+                </div>
+                <p class="feedback" id="fb-ub"></p>
+                <div class="field-row">
+                    <button class="btn btn-amber btn-full" onclick="actualizarBodega()">Guardar cambios</button>
+                    <button class="btn btn-outline" onclick="cancelarEdicionBodega()" style="min-width:120px">Cancelar</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-label">Bodegas registradas</div>
+        <div class="table-wrap">
+            <table id="tbl-bodegas">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Ubicación</th><th>Capacidad</th><th>Encargado</th><th>Acciones</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="6">Pulsa "Ver todas" para cargar.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: PRODUCTOS
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-productos">
+
+        <div class="cards-grid cards-grid-wide">
+
+            <!-- Crear producto -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-green">📦</div>
+                    <div><div class="card-title">Crear producto</div><div class="card-desc">Agrega un producto al catálogo.</div></div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field"><label>Nombre</label><input type="text" id="cp-nombre" placeholder="Cemento Argos 50kg"></div>
+                <div class="field-row">
+                    <div class="field"><label>Categoría</label><input type="text" id="cp-categoria" placeholder="Materiales"></div>
+                    <div class="field"><label>Precio unitario ($)</label><input type="number" id="cp-precio" placeholder="35000" min="0" step="0.01"></div>
+                </div>
+                <p class="feedback" id="fb-cp"></p>
+                <button class="btn btn-green btn-full" onclick="crearProducto()">Crear producto</button>
+            </div>
+
+            <!-- Buscar / filtrar -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">🔎</div>
+                    <div><div class="card-title">Buscar producto</div><div class="card-desc">Por ID o por categoría.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>ID exacto</label><input type="number" id="fp-id" placeholder="1" min="1"></div>
+                    <div class="field"><label>Categoría</label><input type="text" id="fp-cat" placeholder="Materiales"></div>
+                </div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="buscarProductoId()">Por ID</button>
+                    <button class="btn btn-outline btn-full" onclick="buscarProductoCat()">Por categoría</button>
+                    <button class="btn btn-outline btn-full" onclick="listarProductos()">Ver todos</button>
+                </div>
+                <p class="feedback" id="fb-fp"></p>
+            </div>
+
+        </div>
+
+            <!-- Actualizar producto -->
+            <div class="card" id="card-actualizar-producto" style="display:none">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">✏️</div>
+                    <div><div class="card-title">Actualizar producto <span id="up-id-label" style="color:var(--gold)"></span></div><div class="card-desc">Modifica los datos del producto seleccionado.</div></div>
+                    <span class="method m-put" style="margin-left:auto">PUT</span>
+                </div>
+                <input type="hidden" id="up-id">
+                <div class="field"><label>Nombre</label><input type="text" id="up-nombre" placeholder="Cemento Argos 50kg"></div>
+                <div class="field-row">
+                    <div class="field"><label>Categoría</label><input type="text" id="up-categoria" placeholder="Materiales"></div>
+                    <div class="field"><label>Precio ($)</label><input type="number" id="up-precio" placeholder="35000" min="0" step="0.01"></div>
+                </div>
+                <p class="feedback" id="fb-up"></p>
+                <div class="field-row">
+                    <button class="btn btn-amber btn-full" onclick="actualizarProducto()">Guardar cambios</button>
+                    <button class="btn btn-outline" onclick="cancelarEdicionProducto()" style="min-width:120px">Cancelar</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-label">Catálogo de productos</div>
+        <div class="table-wrap">
+            <table id="tbl-productos">
+                <thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Acciones</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="5">Pulsa "Ver todos" para cargar.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: INVENTARIO
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-inventario">
+
+        <div class="cards-grid">
+
+            <!-- Registrar stock -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-green">➕</div>
+                    <div><div class="card-title">Registrar stock inicial</div><div class="card-desc">Asigna stock de un producto a una bodega.</div></div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field-grid-2">
+                    <div class="field"><label>ID bodega</label><input type="number" id="inv-bid" placeholder="1" min="1"></div>
+                    <div class="field"><label>ID producto</label><input type="number" id="inv-pid" placeholder="1" min="1"></div>
+                </div>
+                <div class="field"><label>Stock inicial</label><input type="number" id="inv-stock" placeholder="100" min="0"></div>
+                <p class="feedback" id="fb-inv-create"></p>
+                <button class="btn btn-green btn-full" onclick="registrarInventario()">Registrar</button>
+            </div>
+
+            <!-- Consultas rápidas -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">📊</div>
+                    <div><div class="card-title">Consultar inventario</div><div class="card-desc">Global, por bodega o alertas de stock bajo.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <div class="field"><label>ID de bodega (opcional)</label><input type="number" id="inv-bid-filtro" placeholder="dejar vacío = global"></div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="verInventarioGlobal()">Global</button>
+                    <button class="btn btn-outline btn-full" onclick="verInventarioBodega()">Por bodega</button>
+                    <button class="btn btn-red btn-full"     onclick="verStockBajo()">⚠ Stock bajo</button>
+                </div>
+                <p class="feedback" id="fb-inv-get"></p>
+            </div>
+
+        </div>
+
+            <!-- Actualizar stock -->
+            <div class="card" id="card-actualizar-inv" style="display:none">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">✏️</div>
+                    <div><div class="card-title">Actualizar stock <span id="ui-label" style="color:var(--gold)"></span></div><div class="card-desc">Cambia la cantidad en stock de este registro.</div></div>
+                    <span class="method m-put" style="margin-left:auto">PUT</span>
+                </div>
+                <input type="hidden" id="ui-bid">
+                <input type="hidden" id="ui-pid">
+                <div class="field"><label>Nuevo stock</label><input type="number" id="ui-stock" placeholder="150" min="0"></div>
+                <p class="feedback" id="fb-ui"></p>
+                <div class="field-row">
+                    <button class="btn btn-amber btn-full" onclick="actualizarInventario()">Guardar stock</button>
+                    <button class="btn btn-outline" onclick="cancelarEdicionInventario()" style="min-width:120px">Cancelar</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-label">Resultado del inventario</div>
+        <div class="table-wrap">
+            <table id="tbl-inventario">
+                <thead><tr><th>Bodega</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="5">Selecciona una consulta arriba.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: MOVIMIENTOS
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-movimientos">
+
+        <div class="cards-grid cards-grid-wide">
+
+            <!-- Registrar movimiento -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">🔄</div>
+                    <div><div class="card-title">Registrar movimiento</div><div class="card-desc">Entrada, salida o transferencia entre bodegas.</div></div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field">
+                    <label>Tipo de movimiento</label>
+                    <select id="mov-tipo" onchange="toggleBodegas()">
+                        <option value="ENTRADA">ENTRADA — ingreso a bodega destino</option>
+                        <option value="SALIDA">SALIDA — egreso de bodega origen</option>
+                        <option value="TRANSFERENCIA">TRANSFERENCIA — entre bodegas</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <div class="field" id="wrap-origen"><label>ID bodega origen</label><input type="number" id="mov-origen" placeholder="1" min="1"></div>
+                    <div class="field" id="wrap-destino"><label>ID bodega destino</label><input type="number" id="mov-destino" placeholder="2" min="1"></div>
+                </div>
+                <p class="feedback" id="fb-mov-c"></p>
+                <button class="btn btn-amber btn-full" onclick="registrarMovimiento()">Registrar movimiento</button>
+            </div>
+
+            <!-- Agregar detalle al movimiento -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-green">📝</div>
+                    <div><div class="card-title">Agregar producto al movimiento</div><div class="card-desc">Vincula un producto y cantidad a un movimiento existente.</div></div>
+                    <span class="method m-post" style="margin-left:auto">POST</span>
+                </div>
+                <div class="field-grid-2">
+                    <div class="field"><label>ID movimiento</label><input type="number" id="det-mid" placeholder="1" min="1"></div>
+                    <div class="field"><label>ID producto</label><input type="number" id="det-pid" placeholder="3" min="1"></div>
+                </div>
+                <div class="field"><label>Cantidad</label><input type="number" id="det-cant" placeholder="50" min="1"></div>
+                <p class="feedback" id="fb-det"></p>
+                <button class="btn btn-green btn-full" onclick="agregarDetalle()">Agregar detalle</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">🔎</div>
+                    <div><div class="card-title">Filtrar movimientos</div><div class="card-desc">Por tipo o rango de fechas.</div></div>
+                    <span class="method m-get" style="margin-left:auto">GET</span>
+                </div>
+                <div class="field">
+                    <label>Tipo</label>
+                    <select id="filtro-tipo-mov">
+                        <option value="">— todos —</option>
+                        <option>ENTRADA</option>
+                        <option>SALIDA</option>
+                        <option>TRANSFERENCIA</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>Desde</label><input type="datetime-local" id="filtro-desde"></div>
+                    <div class="field"><label>Hasta</label><input type="datetime-local" id="filtro-hasta"></div>
+                </div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="listarMovimientos()">Ver todos</button>
+                    <button class="btn btn-outline btn-full" onclick="filtrarMovimientos()">Filtrar</button>
+                </div>
+                <p class="feedback" id="fb-mov-f"></p>
+            </div>
+
+        </div>
+
+        <div class="section-label">Movimientos registrados</div>
+        <div class="table-wrap">
+            <table id="tbl-movimientos">
+                <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Usuario</th><th>Origen</th><th>Destino</th><th>Detalles</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="7">Pulsa "Ver todos" para cargar.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB: AUDITORÍA
+         ══════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-auditoria">
+
+        <div class="cards-grid">
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">🔍</div>
+                    <div><div class="card-title">Consultar auditoría</div><div class="card-desc">Historial completo de cambios del sistema.</div></div>
+                </div>
+                <div class="field">
+                    <label>Filtrar por usuario (correo)</label>
+                    <input type="email" id="aud-usuario" placeholder="carlos@logitrack.com">
+                </div>
+                <div class="field">
+                    <label>Filtrar por tipo de operación</label>
+                    <select id="aud-tipo">
+                        <option value="">— todos —</option>
+                        <option>INSERT</option>
+                        <option>UPDATE</option>
+                        <option>DELETE</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Filtrar por entidad</label>
+                    <input type="text" id="aud-entidad" placeholder="Producto, Bodega, Movimiento…">
+                </div>
+                <div class="field-row" style="margin-top:4px">
+                    <button class="btn btn-outline btn-full" onclick="cargarAuditoria()">Ver todo</button>
+                    <button class="btn btn-outline btn-full" onclick="filtrarAuditoria()">Filtrar</button>
+                </div>
+                <p class="feedback" id="fb-aud"></p>
+            </div>
+
+        </div>
+
+        <div class="section-label">Registros de auditoría</div>
+        <div class="table-wrap">
+            <table id="tbl-auditoria">
+                <thead><tr><th>ID</th><th>Operación</th><th>Entidad</th><th>ID entidad</th><th>Usuario</th><th>Fecha/Hora</th><th>Detalles</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="7">Pulsa "Ver todo" para cargar.</td></tr></tbody>
+            </table>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ── SCRIPTS ──────────────────────────────────────────────── -->
+<script src="../js/api.js"></script>
+<script src="../js/admin.js"></script>
+</body>
+</html>

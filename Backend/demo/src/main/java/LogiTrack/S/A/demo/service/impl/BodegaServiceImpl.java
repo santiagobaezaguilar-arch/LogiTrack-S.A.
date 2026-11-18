@@ -12,6 +12,7 @@ import LogiTrack.S.A.demo.repository.BodegaRepository;
 import LogiTrack.S.A.demo.repository.InventarioRepository;
 import LogiTrack.S.A.demo.repository.MovimientoRepository;
 import LogiTrack.S.A.demo.repository.UsuarioRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import LogiTrack.S.A.demo.service.BodegaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -101,10 +102,10 @@ public class BodegaServiceImpl implements BodegaService {
                 .orElseThrow(() -> new RuntimeException("Bodega no encontrada con ID: " + id));
 
         if (inventarioRepository.existsByBodegaId(id)) {
-            throw new RuntimeException("La bodega tiene registros de inventario y no puede eliminarse");
+            throw new BusinessRuleException("La bodega tiene registros de inventario y no puede eliminarse");
         }
         if (movimientoRepository.existsByBodegaOrigenId(id) || movimientoRepository.existsByBodegaDestinoId(id)) {
-            throw new RuntimeException("La bodega tiene movimientos de inventario registrados y no puede eliminarse");
+            throw new BusinessRuleException("La bodega tiene movimientos de inventario registrados y no puede eliminarse");
         }
 
         auditoriaService.registrar(TipoOperacion.DELETE, "Bodega", id,

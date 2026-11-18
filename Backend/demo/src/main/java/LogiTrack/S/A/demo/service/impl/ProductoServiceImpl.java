@@ -8,6 +8,7 @@ import LogiTrack.S.A.demo.model.TipoOperacion;
 import LogiTrack.S.A.demo.repository.DetalleMovimientoRepository;
 import LogiTrack.S.A.demo.repository.InventarioRepository;
 import LogiTrack.S.A.demo.repository.ProductoRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import LogiTrack.S.A.demo.service.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -91,10 +92,10 @@ public class ProductoServiceImpl implements ProductoService {
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
 
         if (inventarioRepository.existsByProductoId(id)) {
-            throw new RuntimeException("El producto tiene registros de inventario en bodegas y no puede eliminarse");
+            throw new BusinessRuleException("El producto tiene registros de inventario en bodegas y no puede eliminarse");
         }
         if (detalleMovimientoRepository.existsByProductoId(id)) {
-            throw new RuntimeException("El producto está asociado a movimientos de inventario y no puede eliminarse");
+            throw new BusinessRuleException("El producto está asociado a movimientos de inventario y no puede eliminarse");
         }
 
         auditoriaService.registrar(TipoOperacion.DELETE, "Producto", id,

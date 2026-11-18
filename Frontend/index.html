@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiTrack S.A. — Inicio de sesión</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Tabs dentro del login-card */
+        .login-card .tabs { margin-bottom: 20px; }
+        .login-card .tab-btn { font-size: 13px; padding: 10px 18px; }
+    </style>
+</head>
+<body>
+
+<div class="login-wrap">
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="login-logo">
+            <div class="login-logo-mark">📦</div>
+            <div>
+                <div class="login-title">Logi<span>Track</span></div>
+                <div class="login-sub">Sistema de gestión de bodegas</div>
+            </div>
+        </div>
+
+        <!-- Tabs login / registro -->
+        <div class="tabs" role="tablist">
+            <button class="tab-btn active" data-tab="login"   role="tab">Iniciar sesión</button>
+            <button class="tab-btn"        data-tab="registro" role="tab">Registrarse</button>
+        </div>
+
+        <!-- ── LOGIN ───────────────────────────────────── -->
+        <div class="tab-panel active" id="tab-login">
+            <form class="login-form" id="form-login" novalidate>
+
+                <div class="field">
+                    <label for="login-correo">Correo electrónico</label>
+                    <input type="email" id="login-correo" placeholder="correo@empresa.com" autocomplete="username" required>
+                </div>
+
+                <div class="field">
+                    <label for="login-pass">Contraseña</label>
+                    <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+
+                <p class="feedback" id="fb-login"></p>
+
+                <button type="submit" class="btn btn-cyan btn-full" id="btn-login">
+                    Entrar al sistema
+                </button>
+
+            </form>
+        </div>
+
+        <!-- ── REGISTRO ────────────────────────────────── -->
+        <div class="tab-panel" id="tab-registro">
+            <form class="login-form" id="form-registro" novalidate>
+
+                <div class="field">
+                    <label for="reg-nombre">Nombre completo</label>
+                    <input type="text" id="reg-nombre" placeholder="Laura Gómez" required>
+                </div>
+
+                <div class="field">
+                    <label for="reg-tel">Teléfono <span style="color:var(--text-dim)">(opcional)</span></label>
+                    <input type="tel" id="reg-tel" placeholder="3209876543">
+                </div>
+
+                <div class="field">
+                    <label for="reg-correo">Correo electrónico</label>
+                    <input type="email" id="reg-correo" placeholder="laura@empresa.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="reg-pass">Contraseña <span style="color:var(--text-dim)">(mín. 6 caracteres)</span></label>
+                    <input type="password" id="reg-pass" placeholder="••••••••" minlength="6" required>
+                </div>
+
+                <p class="feedback" id="fb-registro"></p>
+
+                <button type="submit" class="btn btn-cyan btn-full" id="btn-registro">
+                    Crear cuenta
+                </button>
+
+                <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:4px;">
+                    Tu cuenta se creará con rol <strong style="color:var(--cyan-soft)">EMPLEADO</strong>.<br>
+                    Solo el administrador puede cambiar roles.
+                </p>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    /* ── Redirigir si ya hay sesión ──────────────────────── */
+    (function() {
+        const u = getUsuario();
+        if (u && getToken()) {
+            window.location.replace(u.rol === "ADMIN" ? "views/admin.html" : "views/empleado.html");
+        }
+    })();
+
+    /* ── Tabs ────────────────────────────────────────────── */
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+            btn.classList.add("active");
+            document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        });
+    });
+
+    /* ── LOGIN ───────────────────────────────────────────── */
+    document.getElementById("form-login").addEventListener("submit", async e => {
+        e.preventDefault();
+        const fb  = document.getElementById("fb-login");
+        const btn = document.getElementById("btn-login");
+        const correo   = document.getElementById("login-correo").value.trim();
+        const password = document.getElementById("login-pass").value;
+
+        if (!correo || !password) {
+            mostrarFeedback(fb, "Completa todos los campos.", "err"); return;
+        }
+
+        btn.disabled = true;
+        fb.textContent = "Verificando...";
+        fb.className = "feedback";
+
+        try {
+            const data = await Auth.login(correo, password);
+            guardarSesion(data);
+            fb.textContent = `Bienvenido, ${data.nombre} 👋`;
+            fb.className = "feedback fb-ok";
+            setTimeout(() => {
+                window.location.replace(data.rol === "ADMIN" ? "views/admin.html" : "views/empleado.html");
+            }, 600);
+        } catch (err) {
+            mostrarFeedback(fb, err.message, "err");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    /* ── REGISTRO ────────────────────────────────────────── */
+    document.getElementById("form-registro").addEventListener("submit", async e => {
+        e.preventDefault();
+        const fb  = document.getElementById("fb-registro");
+        const btn = document.getElementById("btn-registro");
+
+        const nombre   = document.getElementById("reg-nombre").value.trim();
+        const telefono = document.getElementById("reg-tel").value.trim();
+        const correo   = document.getElementById("reg-correo").value.trim();
+        const password = document.getElementById("reg-pass").value;
+
+        if (!nombre || !correo || !password) {
+            mostrarFeedback(fb, "Nombre, correo y contraseña son obligatorios.", "err"); return;
+        }
+        if (password.length < 6) {
+            mostrarFeedback(fb, "La contraseña debe tener al menos 6 caracteres.", "err"); return;
+        }
+
+        btn.disabled = true;
+        fb.textContent = "Creando cuenta...";
+        fb.className = "feedback";
+
+        try {
+            const data = await Auth.register({ nombre, telefono: telefono || null, correo, password });
+            guardarSesion(data);
+            fb.textContent = `Cuenta creada. Redirigiendo...`;
+            fb.className = "feedback fb-ok";
+            setTimeout(() => {
+                window.location.replace("views/empleado.html");
+            }, 700);
+        } catch (err) {
+            mostrarFeedback(fb, err.message, "err");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>

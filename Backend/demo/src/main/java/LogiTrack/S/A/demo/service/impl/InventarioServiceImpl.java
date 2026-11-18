@@ -15,6 +15,7 @@ import LogiTrack.S.A.demo.model.TipoOperacion;
 import LogiTrack.S.A.demo.repository.BodegaRepository;
 import LogiTrack.S.A.demo.repository.InventarioRepository;
 import LogiTrack.S.A.demo.repository.ProductoRepository;
+import LogiTrack.S.A.demo.exception.BusinessRuleException;
 import LogiTrack.S.A.demo.service.AuditoriaService;
 import LogiTrack.S.A.demo.service.InventarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,7 +57,7 @@ public class InventarioServiceImpl implements InventarioService {
             InventarioDtoRequest dto
     ) {
         if (inventarioRepository.findByBodegaIdAndProductoId(dto.bodegaId(), dto.productoId()).isPresent()) {
-            throw new RuntimeException("Ya existe un registro de inventario para esa bodega y producto");
+            throw new BusinessRuleException("Ya existe un registro de inventario para esa bodega y producto");
         }
 
         Bodega bodega = bodegaRepository.findById(dto.bodegaId())
