@@ -4,20 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f5d4742f-e2f7-4f4e-a34a-5126895299e8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/LogiTrack S.A..sql" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/LogiTrack S.A..sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/AuditoriaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/AuditoriaServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/BodegaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/BodegaServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/DetalleMovimientoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/DetalleMovimientoServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/InventarioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/InventarioServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/MovimientoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/MovimientoServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/ProductoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/ProductoServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/UsuarioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/java/LogiTrack/S/A/demo/service/impl/UsuarioServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/demo/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/demo/src/main/resources/application.properties" afterDir="false" />
-    </list>
+    <list default="true" id="f5d4742f-e2f7-4f4e-a34a-5126895299e8" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

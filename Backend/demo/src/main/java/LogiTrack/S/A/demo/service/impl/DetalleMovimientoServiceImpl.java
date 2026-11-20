@@ -9,11 +9,9 @@ import LogiTrack.S.A.demo.mapper.DetalleMovimientoMapper;
 import LogiTrack.S.A.demo.mapper.MovimientoMapper;
 import LogiTrack.S.A.demo.mapper.ProductoMapper;
 import LogiTrack.S.A.demo.mapper.UsuarioMapper;
-import LogiTrack.S.A.demo.model.DetalleMovimiento;
-import LogiTrack.S.A.demo.model.Movimiento;
-import LogiTrack.S.A.demo.model.Producto;
-import LogiTrack.S.A.demo.model.TipoOperacion;
+import LogiTrack.S.A.demo.model.*;
 import LogiTrack.S.A.demo.repository.DetalleMovimientoRepository;
+import LogiTrack.S.A.demo.repository.InventarioRepository;
 import LogiTrack.S.A.demo.repository.MovimientoRepository;
 import LogiTrack.S.A.demo.repository.ProductoRepository;
 import LogiTrack.S.A.demo.exception.BusinessRuleException;
@@ -46,6 +44,7 @@ public class DetalleMovimientoServiceImpl implements DetalleMovimientoService {
     private final UsuarioMapper usuarioMapper;
     private final BodegaMapper bodegaMapper;
     private final AuditoriaService auditoriaService;
+    private final InventarioRepository inventarioRepository;
 
     @Operation(summary = "Registrar un detalle de movimiento")
     @ApiResponses(value = {
@@ -66,9 +65,29 @@ public class DetalleMovimientoServiceImpl implements DetalleMovimientoService {
         DetalleMovimiento detalle = detalleMovimientoMapper.buildEntity(movimiento, producto, dto.cantidad());
         detalleMovimientoRepository.save(detalle);
 
+        // ── AJUSTAR STOCK AUTOMÁTICAMENTE SEGÚN EL TIPO DE MOVIMIENTO ──────────
+        //
+        // ENTRADA:       suma cantidad al stock de la bodega DESTINO
+        // SALIDA:        resta cantidad del stock de la bodega ORIGEN
+        // TRANSFERENCIA:  resta de ORIGEN y suma a DESTINO
+        //
+        // Si no existe un registro de inventario para esa combinación
+        // bodega+producto, se crea automáticamente con la cantidad del movimiento.
+        TipoMovimiento tipo = movimiento.getTipoMovimiento();
+        int cantidad = dto.cantidad();
+
+        if (tipo == TipoMovimiento.ENTRADA) {
+            ajustarStock(movimiento.getBodegaDestino().getId(), producto.getId(), cantidad);
+        } else if (tipo == TipoMovimiento.SALIDA) {
+            ajustarStock(movimiento.getBodegaOrigen().getId(), producto.getId(), -cantidad);
+        } else if (tipo == TipoMovimiento.TRANSFERENCIA) {
+            ajustarStock(movimiento.getBodegaOrigen().getId(), producto.getId(), -cantidad);
+            ajustarStock(movimiento.getBodegaDestino().getId(), producto.getId(), cantidad);
+        }
+
         auditoriaService.registrar(TipoOperacion.INSERT, "DetalleMovimiento", detalle.getId(),
                 "sistema", dto.cantidad() + " unidades de producto " + dto.productoId()
-                        + " en movimiento " + dto.movimientoId());
+                        + " en movimiento " + dto.movimientoId() + " (stock ajustado)");
 
         return buildResponse(detalle, movimiento, producto);
     }
@@ -182,5 +201,46 @@ public class DetalleMovimientoServiceImpl implements DetalleMovimientoService {
         );
         ProductoDtoResponse productoDto = productoMapper.entityToDto(producto);
         return detalleMovimientoMapper.entityToDto(detalle, movimientoDto, productoDto);
+    }
+
+    // ── Ajuste de stock ──────────────────────────────────────────────────────
+
+    /*
+     * Busca el registro de inventario para la combinación bodega+producto.
+     * Si no existe, lo crea con stock 0 y luego aplica el ajuste.
+     * Si el ajuste es negativo (salida/transferencia) y el stock resultante
+     * sería negativo, lanza BusinessRuleException.
+     */
+    @org.springframework.transaction.annotation.Transactional
+    private void ajustarStock(Long bodegaId, Long productoId, int cantidad) {
+        Inventario inv = inventarioRepository
+                .findByBodegaIdAndProductoId(bodegaId, productoId)
+                .orElseGet(() -> {
+                    // Si no existe el registro, lo creamos con stock 0
+                    Bodega bodega = new Bodega();
+                    bodega.setId(bodegaId);
+                    Producto prod = new Producto();
+                    prod.setId(productoId);
+                    Inventario nuevo = new Inventario();
+                    nuevo.setId(new InventarioId(bodegaId, productoId));
+                    nuevo.setBodega(bodega);
+                    nuevo.setProducto(prod);
+                    nuevo.setStock(0);
+                    return inventarioRepository.save(nuevo);
+                });
+
+        int nuevoStock = inv.getStock() + cantidad;
+
+        if (nuevoStock < 0) {
+            throw new BusinessRuleException(
+                    "Stock insuficiente en bodega " + bodegaId
+                    + " para producto " + productoId
+                    + ". Stock actual: " + inv.getStock()
+                    + ", intentando mover: " + Math.abs(cantidad)
+            );
+        }
+
+        inv.setStock(nuevoStock);
+        inventarioRepository.save(inv);
     }
 }
