@@ -16,7 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class
+GlobalExceptionHandler {
 
     // 404 — recurso no encontrado en BD
     @ExceptionHandler(EntityNotFoundException.class)
