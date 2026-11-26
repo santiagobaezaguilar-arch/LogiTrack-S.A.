@@ -21,4 +21,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
     // Verificar si una bodega tiene movimientos antes de eliminarla
     boolean existsByBodegaOrigenId(Long bodegaId);
     boolean existsByBodegaDestinoId(Long bodegaId);
+
+    Long countByTipoMovimiento(TipoMovimiento tipoMovimiento);
+
 }

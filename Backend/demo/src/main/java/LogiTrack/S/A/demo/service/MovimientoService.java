@@ -64,4 +64,14 @@ public interface MovimientoService {
             @Parameter(description = "Fecha de inicio del rango", required = true) LocalDateTime desde,
             @Parameter(description = "Fecha de fin del rango", required = true) LocalDateTime hasta
     );
+
+    @Operation(summary = "Listar todos los movimientos recientes")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MovimientoDtoResponse.class))))
+    })
+
+    List<MovimientoDtoResponse> listarRecientes();
+
+
 }

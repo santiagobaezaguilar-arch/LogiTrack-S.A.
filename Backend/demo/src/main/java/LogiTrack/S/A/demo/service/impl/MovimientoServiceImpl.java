@@ -127,6 +127,11 @@ public class MovimientoServiceImpl implements MovimientoService {
         ).toList();
     }
 
+    @Override
+    public List<MovimientoDtoResponse> listarRecientes() {
+        return List.of();
+    }
+
     // ── Métodos auxiliares ───────────────────────────────────────────────────
 
     /*
